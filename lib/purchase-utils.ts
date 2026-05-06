@@ -13,14 +13,36 @@ const PLAN_UNAVAILABLE_PATTERNS = [
   "product not found",
 ];
 
+const PROVIDER_TECHNICAL_FAILURE_PATTERNS = [
+  "active sim",
+  "sim not active",
+  "sim inactive",
+  "sim issue",
+  "route failed",
+  "route unavailable",
+  "provider unavailable",
+  "vendor unavailable",
+  "service unavailable",
+  "gateway timeout",
+  "timeout",
+  "network error",
+  "could not dispense",
+  "unable to dispense",
+];
+
 export const PLAN_UNAVAILABLE_MESSAGE = "plan not available now, choose other plans!";
 export const DATA_INSUFFICIENT_FUNDS_MESSAGE = "Aahh! insufficient fund";
+export const PROVIDER_TECHNICAL_FAILURE_MESSAGE = "unable to send data, try again later";
 
 export function normalizeProviderFailureMessage(message?: string | null) {
   const normalizedMessage = (message || "").toLowerCase();
 
   if (PLAN_UNAVAILABLE_PATTERNS.some((pattern) => normalizedMessage.includes(pattern))) {
     return PLAN_UNAVAILABLE_MESSAGE;
+  }
+
+  if (PROVIDER_TECHNICAL_FAILURE_PATTERNS.some((pattern) => normalizedMessage.includes(pattern))) {
+    return PROVIDER_TECHNICAL_FAILURE_MESSAGE;
   }
 
   return message || "Purchase failed";

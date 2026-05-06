@@ -2209,11 +2209,31 @@ export default function DashboardPage() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user) return;
-    const intervalId = setInterval(() => {
+    if (!user?.id) return;
+
+    const refreshDashboardState = () => {
+      refreshUser().catch(() => undefined);
       refreshRewards().catch(() => undefined);
-    }, 25000);
-    return () => clearInterval(intervalId);
+      refreshAccounts().catch(() => undefined);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshDashboardState();
+      }
+    };
+
+    const onFocus = () => {
+      refreshDashboardState();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [user?.id]);
 
   const dismissBroadcast = (id: string) => {
