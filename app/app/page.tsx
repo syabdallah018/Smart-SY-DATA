@@ -2114,8 +2114,11 @@ export default function DashboardPage() {
   const [purchasingAirtime, setPurchasingAirtime] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
     const cacheBuster = `_cb=${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    fetch(`/api/auth/me?${cacheBuster}`, { credentials: "include", cache: "no-store" })
+    fetch(`/api/auth/me?${cacheBuster}`, { credentials: "include", cache: "no-store", signal: controller.signal })
       .then((response) => response.json())
       .then((payload) => {
         if (payload?.success && payload?.data) {
@@ -2125,7 +2128,15 @@ export default function DashboardPage() {
         router.push("/app/auth");
       })
       .catch(() => router.push("/app/auth"))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, [router]);
 
   useEffect(() => {

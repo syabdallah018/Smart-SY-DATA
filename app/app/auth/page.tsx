@@ -43,17 +43,23 @@ export default function AuthPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
       try {
         const cacheBuster = `_cb=${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const res = await fetch(`/api/auth/me?${cacheBuster}`, { 
           credentials: "include",
-          cache: "no-store"
+          cache: "no-store",
+          signal: controller.signal,
         });
         if (res.ok) {
           router.push("/app");
           return;
         }
       } catch {}
+      finally {
+        clearTimeout(timeout);
+      }
       
       // Load saved phone for smart login
       if (typeof window !== "undefined") {

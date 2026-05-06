@@ -15,6 +15,24 @@ export function Providers({ children }: { children: ReactNode }) {
     let onControllerChange: (() => void) | null = null;
 
     if ("serviceWorker" in navigator) {
+      const ua = navigator.userAgent || "";
+      const isWebView =
+        /\bwv\b/i.test(ua) ||
+        /; wv\)/i.test(ua) ||
+        (/\bVersion\/[\d.]+/i.test(ua) && /Chrome\/[\d.]+/i.test(ua) && /Android/i.test(ua));
+
+      // In-app WebViews are prone to stale/partial SW state after deploy.
+      // Avoid SW control there to prevent startup deadlocks.
+      if (isWebView) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => reg.unregister());
+        });
+        if ("caches" in window) {
+          caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+        }
+        return () => undefined;
+      }
+
       const buildId =
         typeof window !== "undefined" && (window as any).__NEXT_DATA__?.buildId
           ? String((window as any).__NEXT_DATA__.buildId)

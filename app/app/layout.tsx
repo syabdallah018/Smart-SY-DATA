@@ -3,7 +3,6 @@ import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import type { Metadata } from "next";
-import { Providers } from "@/components/providers";
 import AppLayoutClient from "./layout-client";
 
 export const metadata: Metadata = {
@@ -19,8 +18,6 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Providers>
-      <AppLayoutClient>{children}</AppLayoutClient>
-    </Providers>
+    <AppLayoutClient>{children}</AppLayoutClient>
   );
 }
