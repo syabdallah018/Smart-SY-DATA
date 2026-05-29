@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const updatePlanSchema = z.object({
   name: z.string().min(1).optional(),
-  network: z.enum(["MTN", "GLO", "AIRTEL", "NINEMOBILE"]).optional(),
+  network: z.enum(["MTN", "GLO", "AIRTEL"]).optional(),
   sizeLabel: z.string().min(1).optional(),
   validity: z.string().min(1).optional(),
   user_price: z.number().min(50).optional(),

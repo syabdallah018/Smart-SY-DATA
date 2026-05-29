@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "SY DATA SUB — Buy Data Instantly",
   description:
     "Affordable, always connected. Buy data and airtime for all Nigerian networks at the best prices. Fast delivery, zero hassle.",
-  keywords: ["buy data", "cheap data", "MTN data", "GLO data", "Airtel data", "9mobile data", "Nigeria data", "airtime"],
+  keywords: ["buy data", "cheap data", "MTN data", "GLO data", "Airtel data", "Nigeria data", "airtime"],
   viewport: "width=device-width, initial-scale=1, maximum-scale=5",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   icons: {

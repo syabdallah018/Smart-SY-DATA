@@ -11,7 +11,6 @@ export async function GET(req: NextRequest) {
         mtn: "MTN",
         airtel: "AIRTEL",
         glo: "GLO",
-        "9mobile": "NINEMOBILE",
       };
       network = networkMap[network.toLowerCase()] || network.toUpperCase();
     }

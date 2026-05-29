@@ -34,7 +34,7 @@ export const airtimePurchaseSchema = z.object({
     .number()
     .min(50, "Minimum amount is ₦50")
     .max(100000, "Maximum amount is ₦100,000"),
-  network: z.enum(["MTN", "AIRTEL", "GLO", "9MOBILE"]),
+  network: z.enum(["MTN", "AIRTEL", "GLO"]),
 });
 
 export const setPINSchema = z.object({

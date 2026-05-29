@@ -9,7 +9,7 @@ const noticeSchema = z.object({
   message: z.string().min(1, "Message is required"),
   severity: z.enum(["INFO", "WARNING", "SUCCESS", "ERROR", "PROMO"]),
   audience: z.string().default("all"),
-  network: z.enum(["MTN", "GLO", "AIRTEL", "NINEMOBILE"]).nullable().optional(),
+  network: z.enum(["MTN", "GLO", "AIRTEL"]).nullable().optional(),
   isActive: z.boolean().default(true),
   startsAt: z.string().nullable().optional(),
   endsAt: z.string().nullable().optional(),

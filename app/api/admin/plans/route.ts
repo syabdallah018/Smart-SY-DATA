@@ -6,7 +6,7 @@ import { z } from "zod";
 const planSchema = z
   .object({
     name: z.string().min(1, "Name is required"),
-    network: z.enum(["MTN", "GLO", "AIRTEL", "NINEMOBILE"]),
+    network: z.enum(["MTN", "GLO", "AIRTEL"]),
     sizeLabel: z.string().min(1, "Size label is required"),
     validity: z.string().min(1, "Validity is required"),
     user_price: z.number().min(50, "Minimum user price is N50"),

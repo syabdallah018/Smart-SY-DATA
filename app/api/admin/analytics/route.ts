@@ -96,7 +96,6 @@ export async function GET(req: NextRequest) {
       { name: "MTN", value: 0 },
       { name: "GLO", value: 0 },
       { name: "AIRTEL", value: 0 },
-      { name: "NINEMOBILE", value: 0 },
     ];
 
     networkRevenue.forEach((item: any) => {

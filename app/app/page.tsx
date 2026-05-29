@@ -152,7 +152,6 @@ const NETWORKS = [
   { id: "mtn", name: "MTN", color: "#FFCC00", bg: "#fff7cc", logo: "/mtn.jpg" },
   { id: "airtel", name: "Airtel", color: "#FF3333", bg: "#ffe2e2", logo: "/airtel.jpg" },
   { id: "glo", name: "Glo", color: "#16a34a", bg: "#dcfce7", logo: "/glo.jpg" },
-  { id: "9mobile", name: "9mobile", color: "#00A859", bg: "#d1fae5", logo: "/9mobile.jpg" },
 ];
 
 const AIRTIME_AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
@@ -1468,7 +1467,6 @@ function AirtimeToCashTab() {
           <option value="mtn">MTN</option>
           <option value="airtel">Airtel</option>
           <option value="glo">Glo</option>
-          <option value="9mobile">9mobile</option>
         </select>
       </div>
 

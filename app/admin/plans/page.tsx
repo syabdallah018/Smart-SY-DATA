@@ -190,7 +190,6 @@ export default function PlansPage() {
                       <SelectItem value="MTN">MTN</SelectItem>
                       <SelectItem value="GLO">Glo</SelectItem>
                       <SelectItem value="AIRTEL">Airtel</SelectItem>
-                      <SelectItem value="NINEMOBILE">9Mobile</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
