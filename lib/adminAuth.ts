@@ -45,11 +45,13 @@ export function adminErrorResponse(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export async function createAdminSessionResponse() {
+export async function createAdminSessionResponse(admin: AdminUser) {
   const token = await signToken({
-    userId: "admin",
-    email: "admin@sydatasub.com",
+    userId: admin.userId,
+    email: admin.email,
     role: "ADMIN",
+    fullName: admin.fullName,
+    phone: admin.phone,
   });
 
   const response = NextResponse.json({ success: true, message: "Admin authenticated" }, { status: 200 });

@@ -16,6 +16,7 @@ function getSecretBytes() {
 
 export const SESSION_COOKIE_NAME = "sy_session";
 export const ADMIN_SESSION_COOKIE_NAME = "sy_admin_session";
+const SESSION_TOKEN_VERSION = "2026-05-admin-hardening-v1";
 
 function getCookieOptions() {
   return {
@@ -41,13 +42,15 @@ export interface JWTPayload {
   userId: string;
   email: string;
   role: "USER" | "AGENT" | "ADMIN";
+  sv?: string;
   [key: string]: any;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {
   const secret = getSecretBytes();
-  const token = await new SignJWT(payload)
+  const token = await new SignJWT({ ...payload, sv: SESSION_TOKEN_VERSION })
     .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
     .setExpirationTime("7d")
     .sign(secret);
 
@@ -60,7 +63,11 @@ export async function verifyToken(
   try {
     const secret = getSecretBytes();
     const verified = await jwtVerify(token, secret);
-    return verified.payload as JWTPayload;
+    const payload = verified.payload as JWTPayload;
+    if (payload.sv !== SESSION_TOKEN_VERSION) {
+      return null;
+    }
+    return payload;
   } catch (error) {
     return null;
   }

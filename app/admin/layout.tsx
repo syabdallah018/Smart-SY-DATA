@@ -29,6 +29,8 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
   const [password, setPassword] = useState("");
   const [authAttempted, setAuthAttempted] = useState(false);
 
@@ -52,10 +54,10 @@ export default function AdminLayout({
     setAuthAttempted(true);
 
     try {
-      const res = await fetch("/api/admin/verify", {
+      const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ phone, pin, password }),
       });
 
       const data = await res.json();
@@ -63,7 +65,8 @@ export default function AdminLayout({
         setAuthenticated(true);
         toast.success("Ahh, nice. Admin access confirmed.");
       } else {
-        toast.error("Ahh, sorry, that admin password did not match.");
+        toast.error(data.error || "Ahh, sorry, admin sign-in failed.");
+        setPin("");
         setPassword("");
       }
     } catch {
@@ -77,6 +80,8 @@ export default function AdminLayout({
     try {
       await fetch("/api/admin/logout", { method: "POST" });
       setAuthenticated(false);
+      setPhone("");
+      setPin("");
       setPassword("");
       toast.success("You have been signed out of admin.");
     } catch {
@@ -109,9 +114,39 @@ export default function AdminLayout({
             {/* Login Card */}
             <div className="w-full bg-white rounded-2xl shadow-2xl p-8">
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Admin Panel</h1>
-              <p className="text-slate-600 mb-8">Enter admin password to access dashboard</p>
+              <p className="text-slate-600 mb-8">Enter admin phone, PIN, and admin password</p>
 
               <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={11}
+                    placeholder="07000000000"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                    disabled={authAttempted}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    PIN
+                  </label>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="••••••"
+                    value={pin}
+                    onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    disabled={authAttempted}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
                     Admin Password
@@ -128,7 +163,7 @@ export default function AdminLayout({
                 </div>
                 <button
                   type="submit"
-                  disabled={!password || authAttempted}
+                  disabled={phone.length !== 11 || pin.length !== 6 || !password || authAttempted}
                   className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold transition shadow-lg"
                 >
                   {authAttempted ? (

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminSessionResponse, requireAdmin, validateAdminPassword } from "@/lib/adminAuth";
+import { getSessionUser } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { enforceRateLimit, rejectCrossSiteMutation } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
@@ -17,8 +19,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Admin not configured" }, { status: 500 })
     }
 
+    const sessionUser = await getSessionUser(req);
+    if (!sessionUser || sessionUser.role !== "ADMIN") {
+      return NextResponse.json(
+        { success: false, error: "Admin phone/PIN validation is required first." },
+        { status: 401 }
+      );
+    }
+
+    const adminUser = await prisma.user.findUnique({
+      where: { id: sessionUser.userId },
+      select: { id: true, phone: true, email: true, fullName: true, role: true, isBanned: true },
+    });
+
+    if (!adminUser || adminUser.role !== "ADMIN" || adminUser.isBanned) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
     if (validateAdminPassword(password)) {
-      return createAdminSessionResponse()
+      return createAdminSessionResponse({
+        userId: adminUser.id,
+        email: adminUser.email || adminUser.phone,
+        role: "ADMIN",
+        fullName: adminUser.fullName,
+        phone: adminUser.phone,
+      });
     } else {
       return NextResponse.json({ success: false, error: "Invalid password" }, { status: 401 })
     }
