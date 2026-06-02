@@ -376,6 +376,44 @@ vercel env add SAIFUL_BASE_URL
 
 ---
 
+### Alrahuz API Configuration
+
+**API Purpose:** Data provider for data purchases and airtime topups
+
+#### `ALRAHUZ_API_TOKEN`
+**Required:** âœ… Yes  
+**Environment:** Production & Development  
+**Type:** API Token
+
+**Description:**
+Your Alrahuz token used for both data and airtime API requests.
+
+**Vercel Setup:**
+```bash
+vercel env add ALRAHUZ_API_TOKEN
+# Paste your Alrahuz token
+# Select: Production, Preview, Development
+```
+
+---
+
+#### `ALRAHUZ_BASE_URL`
+**Required:** âŒ No  
+**Environment:** Production & Development  
+**Type:** API Endpoint URL
+
+**Description:**
+The base URL for Alrahuz endpoints. Defaults to `https://alrahuzdata.com.ng/api`.
+
+**Vercel Setup:**
+```bash
+vercel env add ALRAHUZ_BASE_URL
+# Optional: paste your custom Alrahuz base URL
+# Select: Production, Preview, Development
+```
+
+---
+
 ## Public Configuration
 
 ### `NEXT_PUBLIC_APP_URL`
@@ -489,6 +527,8 @@ vercel deploy --prod
 | `SMEPLUG_BASE_URL` | ✅ | All | URL | https://smeplug.ng/api/v1 |
 | `SAIFUL_API_KEY` | ✅ | All | String | API key |
 | `SAIFUL_BASE_URL` | ✅ | All | URL | https://app.saifulegendconnect.com/api |
+| `ALRAHUZ_API_TOKEN` | ✅ | All | String | API token |
+| `ALRAHUZ_BASE_URL` | ❌ | All | URL | https://alrahuzdata.com.ng/api |
 | `NEXT_PUBLIC_APP_URL` | ✅ | All | URL | https://sydatasub.com |
 
 ---

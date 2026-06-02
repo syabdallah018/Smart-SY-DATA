@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { purchaseAirtime } from "@/lib/smeplug";
+import { purchaseAirtime } from "@/lib/alrahuz.mjs";
 import { findRecentDuplicateTransaction, normalizeProviderFailureMessage } from "@/lib/purchase-utils";
 import { getSessionUser } from "@/lib/auth";
 import { z } from "zod";

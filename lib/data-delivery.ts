@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import * as smeplug from "@/lib/smeplug";
 import * as saiful from "@/lib/saiful";
+import { purchaseData as purchaseFromAlrahuz } from "@/lib/alrahuz.mjs";
+import { purchaseDataByPlan } from "@/lib/data-provider.mjs";
 import { normalizeProviderFailureMessage } from "@/lib/purchase-utils";
 import { Transaction } from "@prisma/client";
 
@@ -23,24 +25,18 @@ export async function deliverGuestData(transaction: Transaction) {
       };
     }
 
-    let result;
-
-    // Call appropriate API based on plan's API source
-    if (plan.apiSource === "API_A") {
-      result = await smeplug.purchaseData({
-        externalNetworkId: plan.externalNetworkId,
-        externalPlanId: plan.externalPlanId,
+    const result = await purchaseDataByPlan(
+      plan,
+      {
         phone: transaction.phone,
         reference: transaction.reference,
-      });
-    } else {
-      result = await saiful.purchaseData({
-        plan: plan.externalPlanId,
-        mobileNumber: transaction.phone,
-        network: plan.network,
-        reference: transaction.reference,
-      });
-    }
+      },
+      {
+        API_A: smeplug.purchaseData,
+        API_B: saiful.purchaseData,
+        API_C: purchaseFromAlrahuz,
+      }
+    );
 
     // Update transaction with result
     await prisma.transaction.update({

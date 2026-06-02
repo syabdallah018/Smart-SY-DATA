@@ -117,6 +117,8 @@ Create a `.env.local` file with the following variables:
 | **SMEPLUG_BASE_URL** | API A base URL | `https://api.smeplug.com/` | ✅ |
 | **SAIFUL_API_KEY** | API B data provider key | `sk_...` | ✅ |
 | **SAIFUL_BASE_URL** | API B base URL | `https://api.saiful.com/` | ✅ |
+| **ALRAHUZ_API_TOKEN** | API C data and airtime token | `Token ...` | ✅ |
+| **ALRAHUZ_BASE_URL** | API C base URL | `https://alrahuzdata.com.ng/api` | ✅ |
 
 ### Getting Credentials
 
@@ -135,6 +137,11 @@ Create a `.env.local` file with the following variables:
 1. Contact Saiful team for integration
 2. Get API credentials
 3. Copy to `SAIFUL_API_KEY` and `SAIFUL_BASE_URL`
+
+**API C (Alrahuz)**:
+1. Get your Alrahuz API token
+2. Copy it to `ALRAHUZ_API_TOKEN`
+3. Optional: set `ALRAHUZ_BASE_URL` if your account uses a different API base
 
 ---
 
@@ -470,7 +477,7 @@ const isValid = expectedHash === req.headers["x-wiaxy-signature"];
    - Size Label: `500MB`
    - Validity: `Weekly`
    - Price: `300` (in naira)
-   - API Source: `API_A` or `API_B`
+   - API Source: `API_A`, `API_B`, or `API_C`
    - External Plan ID: Get from provider
    - External Network ID: Get from provider
 5. Click **Create**

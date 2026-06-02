@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
+import { BrandEntryScreen } from "@/components/app/BrandEntry";
 import { getFriendlyMessage } from "@/lib/user-feedback";
 
 const T = {
@@ -53,7 +54,7 @@ export default function AuthPage() {
           signal: controller.signal,
         });
         if (res.ok) {
-          router.push("/app");
+          router.replace("/app");
           return;
         }
       } catch {}
@@ -100,7 +101,7 @@ export default function AuthPage() {
           localStorage.setItem("saved_phone", phone);
         }
         toast.success("You are signed in.");
-        router.push("/app");
+        router.replace("/app");
       } else {
         const data = await res.json();
         toast.error(getFriendlyMessage(data.error, "We could not sign you in right now."));
@@ -160,7 +161,7 @@ export default function AuthPage() {
 
       if (res.ok) {
         toast.success("Your account is ready.");
-        router.push("/app");
+        router.replace("/app");
       } else {
         const data = await res.json();
         toast.error(getFriendlyMessage(data.error, "We could not create your account right now."));
@@ -173,7 +174,13 @@ export default function AuthPage() {
   };
 
   if (!hasCheckedAuth) {
-    return <div style={{ minHeight: "100vh", background: T.bg }} />;
+    return (
+      <BrandEntryScreen
+        subtitle="Loading secure sign in"
+        message="We are checking whether you already have an active session on this device."
+        accentLabel="Welcome back"
+      />
+    );
   }
 
   return (

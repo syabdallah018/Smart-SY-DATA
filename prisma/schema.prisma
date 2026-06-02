@@ -44,6 +44,7 @@ enum TransactionStatus {
 enum ApiSource {
   API_A
   API_B
+  API_C
 }
 
 enum RewardType {

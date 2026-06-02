@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { createReservedVirtualAccount, md5Hex, verifyBillstackSignature } from "../lib/billstack-core.mjs";
 import { processBillstackWebhookWithAdapter } from "../lib/billstack-webhook-core.mjs";
+import { purchaseData as purchaseAlrahuzData, purchaseAirtime as purchaseAlrahuzAirtime } from "../lib/alrahuz.mjs";
+import { purchaseDataByPlan } from "../lib/data-provider.mjs";
 
 async function testCreateReservedVirtualAccount() {
   let seenHeaders = null;
@@ -100,10 +102,143 @@ async function testWebhookSignatureAndIdempotency() {
   assert.equal(second.status, "duplicate");
 }
 
+async function testAlrahuzDataClient() {
+  let seen = null;
+
+  const postImpl = async (url, body, init) => {
+    seen = { url, body, init };
+    return {
+      status: 200,
+      data: {
+        status: true,
+        data: {
+          message: "Data queued",
+          reference: "ARH-123",
+        },
+      },
+    };
+  };
+
+  const result = await purchaseAlrahuzData(
+    {
+      network: 1,
+      plan: 423,
+      phone: "09037346247",
+      reference: "DATA-REF-1",
+    },
+    {
+      baseUrl: "https://alrahuzdata.com.ng/api",
+      token: "token_123",
+      postImpl,
+    }
+  );
+
+  assert.equal(seen.url, "https://alrahuzdata.com.ng/api/data/");
+  assert.equal(seen.init.headers.Authorization, "Token token_123");
+  assert.equal(seen.init.headers["Content-Type"], "application/json");
+  assert.deepEqual(seen.body, {
+    network: 1,
+    mobile_number: "09037346247",
+    plan: 423,
+    Ported_number: true,
+  });
+  assert.equal(result.success, true);
+  assert.equal(result.message, "Data queued");
+  assert.equal(result.externalReference, "ARH-123");
+}
+
+async function testAlrahuzAirtimeClientFailure() {
+  let seen = null;
+
+  const postImpl = async (url, body, init) => {
+    seen = { url, body, init };
+    return {
+      status: 200,
+      data: {
+        status: false,
+        message: "Airtime failed",
+        reference: "AIR-456",
+      },
+    };
+  };
+
+  const result = await purchaseAlrahuzAirtime(
+    {
+      network: 4,
+      amount: 500,
+      phone: "08012345678",
+      reference: "AIR-REF-1",
+    },
+    {
+      baseUrl: "https://alrahuzdata.com.ng/api",
+      token: "token_123",
+      postImpl,
+    }
+  );
+
+  assert.equal(seen.url, "https://alrahuzdata.com.ng/api/topup/");
+  assert.deepEqual(seen.body, {
+    network: 4,
+    amount: 500,
+    mobile_number: "08012345678",
+    Ported_number: true,
+    airtime_type: "VTU",
+  });
+  assert.equal(result.success, false);
+  assert.equal(result.message, "Airtime failed");
+  assert.equal(result.externalReference, "AIR-456");
+}
+
+async function testApiCRouting() {
+  let called = false;
+
+  const result = await purchaseDataByPlan(
+    {
+      apiSource: "API_C",
+      externalNetworkId: 1,
+      externalPlanId: 777,
+      network: "MTN",
+    },
+    {
+      phone: "09037346247",
+      reference: "DATA-REF-API-C",
+    },
+    {
+      API_A: async () => {
+        throw new Error("API_A should not be called");
+      },
+      API_B: async () => {
+        throw new Error("API_B should not be called");
+      },
+      API_C: async (params) => {
+        called = true;
+        assert.deepEqual(params, {
+          network: 1,
+          plan: 777,
+          phone: "09037346247",
+          reference: "DATA-REF-API-C",
+        });
+        return {
+          success: true,
+          message: "OK",
+          externalReference: "ARH-777",
+        };
+      },
+    }
+  );
+
+  assert.equal(called, true);
+  assert.equal(result.success, true);
+  assert.equal(result.externalReference, "ARH-777");
+}
+
 async function main() {
   const tests = [
     ["BillStack create account client", testCreateReservedVirtualAccount],
     ["BillStack webhook signature + idempotency", testWebhookSignatureAndIdempotency],
+    ["Alrahuz data client", testAlrahuzDataClient],
+    ["Alrahuz airtime client failure", testAlrahuzAirtimeClientFailure],
+    ["API_C routing", testApiCRouting],
   ];
 
   let passed = 0;

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { purchaseData as purchaseFromSmeplug } from "@/lib/smeplug";
 import { purchaseData as purchaseFromSaiful } from "@/lib/saiful";
+import { purchaseData as purchaseFromAlrahuz } from "@/lib/alrahuz.mjs";
+import { purchaseDataByPlan } from "@/lib/data-provider.mjs";
 import { findRecentDuplicateTransaction, normalizeProviderFailureMessage, DATA_INSUFFICIENT_FUNDS_MESSAGE } from "@/lib/purchase-utils";
 import { getPlanPriceForUser } from "@/lib/pricing";
 import { checkAndAwardRewards } from "@/lib/rewards";
@@ -238,20 +240,18 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const apiResult =
-        plan.apiSource === "API_A"
-          ? await purchaseFromSmeplug({
-              externalNetworkId: plan.externalNetworkId,
-              externalPlanId: plan.externalPlanId,
-              phone: recipientPhone,
-              reference,
-            })
-          : await purchaseFromSaiful({
-              plan: plan.externalPlanId,
-              mobileNumber: recipientPhone,
-              network: plan.network,
-              reference,
-            });
+      const apiResult = await purchaseDataByPlan(
+        plan,
+        {
+          phone: recipientPhone,
+          reference,
+        },
+        {
+          API_A: purchaseFromSmeplug,
+          API_B: purchaseFromSaiful,
+          API_C: purchaseFromAlrahuz,
+        }
+      );
 
       if (!apiResult.success) {
         const errorMessage = normalizeProviderFailureMessage(apiResult.message);

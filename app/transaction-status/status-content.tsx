@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast, Toaster } from "sonner";
+import { BrandEntryScreen } from "@/components/app/BrandEntry";
 
 interface Transaction {
   id: string;
@@ -27,11 +28,11 @@ export default function StatusContent() {
 
   useEffect(() => {
     if (!reference) {
-      router.push("/app");
+      router.replace("/app");
       return;
     }
 
-    const fetchTransaction = async () => {
+    const fetchTransaction = async (): Promise<"PENDING" | "SUCCESS" | "FAILED" | "OTHER" | null> => {
       try {
         const res = await fetch(`/api/transactions/status?reference=${reference}`, {
           credentials: "include",
@@ -39,27 +40,47 @@ export default function StatusContent() {
         if (res.ok) {
           const data = await res.json();
           setTransaction(data.transaction);
+          return data.transaction?.status || "OTHER";
         } else {
           toast.error("Could not load transaction details");
+          return "OTHER";
         }
       } catch (error) {
         toast.error("Error loading transaction");
+        return "OTHER";
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTransaction();
-    // Poll for status updates every 3 seconds
-    const interval = setInterval(fetchTransaction, 3000);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const poll = async () => {
+      const status = await fetchTransaction();
+      if (cancelled) return;
+      if (status === "PENDING") {
+        timeoutId = setTimeout(() => {
+          void poll();
+        }, 4000);
+      }
+    };
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [reference, router]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500" />
-      </div>
+      <BrandEntryScreen
+        subtitle="Loading transaction status"
+        message="We are checking the latest payment update for this reference."
+        accentLabel="Status check"
+      />
     );
   }
 
@@ -177,16 +198,16 @@ export default function StatusContent() {
           )}
 
           <div className="flex gap-3">
-            <Button
-              onClick={() => router.push("/app")}
-              variant="outline"
-              className="flex-1 border-gray-300"
-            >
+          <Button
+            onClick={() => router.replace("/app")}
+            variant="outline"
+            className="flex-1 border-gray-300"
+          >
               Back to Login
             </Button>
             {transaction.status === "FAILED" && (
               <Button
-                onClick={() => router.push("/app/checkout")}
+                onClick={() => router.replace("/app/checkout")}
                 className="flex-1 bg-teal-500 hover:bg-teal-600 text-white"
               >
                 Try Again

@@ -70,7 +70,6 @@ export async function fetchWithCacheBuster(
     },
   };
   
-  console.log(`[CACHE-BUSTER] Fetching ${url} with no-cache options`);
   return fetch(url, enhancedOptions);
 }
 

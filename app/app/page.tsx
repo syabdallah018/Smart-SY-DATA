@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { BrandEntryScreen } from "@/components/app/BrandEntry";
 import { getFriendlyMessage } from "@/lib/user-feedback";
 
 const fontStyle = `
@@ -2123,9 +2124,9 @@ export default function DashboardPage() {
           setUser(payload.data);
           return;
         }
-        router.push("/app/auth");
+        router.replace("/app/auth");
       })
-      .catch(() => router.push("/app/auth"))
+      .catch(() => router.replace("/app/auth"))
       .finally(() => {
         clearTimeout(timeout);
         setLoading(false);
@@ -2274,7 +2275,7 @@ export default function DashboardPage() {
         localStorage.clear();
         sessionStorage.clear();
       }
-      window.location.href = "/app/auth";
+      router.replace("/app/auth");
     }
   };
 
@@ -2414,14 +2415,18 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.bg }}>
-        <Loader2 size={28} className="animate-spin" color={T.blue} />
-      </div>
-    );
+    return <BrandEntryScreen subtitle="Loading your dashboard" message="We are checking your session, balance, and latest activity." />;
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <BrandEntryScreen
+        subtitle="Redirecting to sign in"
+        message="Your session is not available yet. Taking you to the secure login screen."
+        accentLabel="Secure sign-in"
+      />
+    );
+  }
 
   const initials = user.fullName
     .split(" ")

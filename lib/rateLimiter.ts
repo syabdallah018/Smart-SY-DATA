@@ -9,6 +9,7 @@ interface RateLimitEntry {
 }
 
 const limiters = new Map<string, RateLimitEntry>();
+let lastCleanupAt = 0;
 
 export function getRateLimitKey(ip: string, endpoint: string): string {
   return `${ip}:${endpoint}`;
@@ -20,6 +21,12 @@ export function checkRateLimit(
   windowMs: number
 ): boolean {
   const now = Date.now();
+
+  if (now - lastCleanupAt > 5 * 60 * 1000 || limiters.size > 1000) {
+    cleanupOldEntries();
+    lastCleanupAt = now;
+  }
+
   const entry = limiters.get(key);
 
   if (!entry || now > entry.resetTime) {
@@ -71,5 +78,3 @@ export function cleanupOldEntries(): void {
   }
 }
 
-// Cleanup every 5 minutes
-setInterval(cleanupOldEntries, 5 * 60 * 1000);

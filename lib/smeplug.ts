@@ -20,6 +20,15 @@ interface SmeplugAirtimeParams {
   reference: string;
 }
 
+const shouldLogProviderTraffic =
+  process.env.NODE_ENV !== "production" && process.env.DEBUG_PROVIDER_LOGS === "1";
+
+const logProviderTraffic = (...args: unknown[]) => {
+  if (shouldLogProviderTraffic) {
+    console.log(...args);
+  }
+};
+
 function getSmeplugConfig() {
   const baseUrl =
     process.env.SMEPLUG_BASE_URL ||
@@ -62,7 +71,7 @@ export async function purchaseData(params: SmeplugPurchaseParams): Promise<Smepl
       phone: formattedPhone,
     };
 
-    console.log("[SMEPLUG REQUEST]", {
+    logProviderTraffic("[SMEPLUG REQUEST]", {
       url: `${baseUrl}/data/purchase`,
       body: requestBody,
       timestamp: new Date().toISOString(),
@@ -81,7 +90,7 @@ export async function purchaseData(params: SmeplugPurchaseParams): Promise<Smepl
       }
     );
 
-    console.log("[SMEPLUG RESPONSE]", {
+    logProviderTraffic("[SMEPLUG RESPONSE]", {
       status: response.status,
       data: response.data,
       timestamp: new Date().toISOString(),
@@ -95,11 +104,11 @@ export async function purchaseData(params: SmeplugPurchaseParams): Promise<Smepl
         message: response.data.data.msg || "Data purchase successful",
         externalReference: response.data.data.reference,
       };
-      console.log("[SMEPLUG SUCCESS]", returnData);
+      logProviderTraffic("[SMEPLUG SUCCESS]", returnData);
       return returnData;
     } else {
       const errorMsg = response.data?.data?.msg || response.data?.msg || response.data?.message || "Data purchase failed";
-      console.log("[SMEPLUG FAILED]", { message: errorMsg, response: response.data });
+      logProviderTraffic("[SMEPLUG FAILED]", { message: errorMsg, response: response.data });
       return {
         success: false,
         message: errorMsg,
@@ -151,7 +160,7 @@ export async function purchaseAirtime(params: SmeplugAirtimeParams): Promise<Sme
       phone: formattedPhone,
     };
 
-    console.log(
+    logProviderTraffic(
       "[SMEPLUG AIRTIME REQUEST]",
       JSON.stringify({
         stage: "request",
@@ -174,7 +183,7 @@ export async function purchaseAirtime(params: SmeplugAirtimeParams): Promise<Sme
       }
     );
 
-    console.log(
+    logProviderTraffic(
       "[SMEPLUG AIRTIME RESPONSE]",
       JSON.stringify({
         stage: "response",

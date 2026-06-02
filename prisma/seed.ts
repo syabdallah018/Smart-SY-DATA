@@ -220,8 +220,47 @@ async function main() {
       },
     ];
 
+    // Optional API C plans can be seeded from JSON to avoid hardcoding provider IDs.
+    // Example:
+    // ALRAHUZ_SEED_PLANS_JSON='[{"name":"MTN 1GB","network":"MTN","sizeLabel":"1GB","validity":"Monthly","price":500,"externalPlanId":123,"externalNetworkId":1}]'
+    const apiCPlans = (() => {
+      const raw = process.env.ALRAHUZ_SEED_PLANS_JSON;
+      if (!raw) return [];
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed
+          .map((plan) => ({
+            name: String(plan.name || "").trim(),
+            network: plan.network as NetworkType,
+            sizeLabel: String(plan.sizeLabel || "").trim(),
+            validity: String(plan.validity || "").trim(),
+            price: Number(plan.price || 0),
+            apiSource: ApiSource.API_C,
+            externalPlanId: Number(plan.externalPlanId),
+            externalNetworkId: Number(plan.externalNetworkId),
+          }))
+          .filter(
+            (plan) =>
+              plan.name &&
+              plan.sizeLabel &&
+              plan.validity &&
+              Object.values(NetworkType).includes(plan.network) &&
+              Number.isInteger(plan.externalPlanId) &&
+              plan.externalPlanId > 0 &&
+              Number.isInteger(plan.externalNetworkId) &&
+              plan.externalNetworkId > 0
+          );
+      } catch (error) {
+        console.warn("Skipping ALRAHUZ_SEED_PLANS_JSON: invalid JSON");
+        return [];
+      }
+    })();
+
     // Combine all plans
-    const allPlans = [...apiAPlans, ...apiBPlans];
+    const allPlans = [...apiAPlans, ...apiBPlans, ...apiCPlans];
 
     // Delete existing plans to avoid duplicates
     await prisma.plan.deleteMany();
@@ -319,6 +358,7 @@ async function main() {
     console.log(`   • Rewards seeded: 3`);
     console.log(`   • API A Plans: ${apiAPlans.length}`);
     console.log(`   • API B Plans: ${apiBPlans.length}`);
+    console.log(`   • API C Plans: ${apiCPlans.length}`);
     console.log("═══════════════════════════════════════════════════════════\n");
   } catch (error) {
     console.error("❌ Error during seed:", error);

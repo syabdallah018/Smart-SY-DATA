@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { purchaseData as purchaseFromSmeplug } from "@/lib/smeplug";
 import { purchaseData as purchaseFromSaiful } from "@/lib/saiful";
+import { purchaseData as purchaseFromAlrahuz } from "@/lib/alrahuz.mjs";
+import { purchaseDataByPlan } from "@/lib/data-provider.mjs";
 import { getPlanPriceForUser } from "@/lib/pricing";
 import { normalizeProviderFailureMessage } from "@/lib/purchase-utils";
 import { z } from "zod";
@@ -43,20 +45,18 @@ export async function POST(req: NextRequest) {
     });
 
     try {
-      const apiResult =
-        plan.apiSource === "API_A"
-          ? await purchaseFromSmeplug({
-              externalNetworkId: plan.externalNetworkId,
-              externalPlanId: plan.externalPlanId,
-              phone,
-              reference,
-            })
-          : await purchaseFromSaiful({
-              plan: plan.externalPlanId,
-              mobileNumber: phone,
-              network: plan.network,
-              reference,
-            });
+      const apiResult = await purchaseDataByPlan(
+        plan,
+        {
+          phone,
+          reference,
+        },
+        {
+          API_A: purchaseFromSmeplug,
+          API_B: purchaseFromSaiful,
+          API_C: purchaseFromAlrahuz,
+        }
+      );
 
       if (apiResult.success) {
         await prisma.transaction.update({

@@ -13,6 +13,15 @@ interface SaifulResponse {
   externalReference?: string;
 }
 
+const shouldLogProviderTraffic =
+  process.env.NODE_ENV !== "production" && process.env.DEBUG_PROVIDER_LOGS === "1";
+
+const logProviderTraffic = (...args: unknown[]) => {
+  if (shouldLogProviderTraffic) {
+    console.log(...args);
+  }
+};
+
 export async function purchaseData(params: SaifulPurchaseParams): Promise<SaifulResponse> {
   try {
     const { plan, mobileNumber, network, reference } = params;
@@ -40,7 +49,7 @@ export async function purchaseData(params: SaifulPurchaseParams): Promise<Saiful
       network: networkId,
     };
 
-    console.log("[SAIFUL REQUEST]", {
+    logProviderTraffic("[SAIFUL REQUEST]", {
       url: `${SAIFUL_API_URL}/data/${reference}`,
       body: requestBody,
       timestamp: new Date().toISOString(),
@@ -60,7 +69,7 @@ export async function purchaseData(params: SaifulPurchaseParams): Promise<Saiful
       }
     );
 
-    console.log("[SAIFUL RESPONSE]", {
+    logProviderTraffic("[SAIFUL RESPONSE]", {
       status: response.status,
       data: response.data,
       timestamp: new Date().toISOString(),
@@ -76,7 +85,7 @@ export async function purchaseData(params: SaifulPurchaseParams): Promise<Saiful
         message: responseData.description || "Data purchase successful",
         externalReference: responseData.ident,
       };
-      console.log("[SAIFUL SUCCESS]", returnData);
+      logProviderTraffic("[SAIFUL SUCCESS]", returnData);
       return returnData;
     } else if (responseData?.Status === "pending" || responseData?.status === "pending") {
       const returnData = {
@@ -84,11 +93,11 @@ export async function purchaseData(params: SaifulPurchaseParams): Promise<Saiful
         message: responseData.description || "Data purchase pending",
         externalReference: responseData.ident,
       };
-      console.log("[SAIFUL PENDING]", returnData);
+      logProviderTraffic("[SAIFUL PENDING]", returnData);
       return returnData;
     } else {
       const errorMsg = responseData?.description || responseData?.message || "Data purchase failed";
-      console.log("[SAIFUL FAILED]", { message: errorMsg, response: responseData });
+      logProviderTraffic("[SAIFUL FAILED]", { message: errorMsg, response: responseData });
       return {
         success: false,
         message: errorMsg,
